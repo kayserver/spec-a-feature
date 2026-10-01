@@ -1210,6 +1210,106 @@ No two teams can have the same name. The team name must be unique. The course ad
 
 ## **Student**
 
+### **UC-STU-remind-non-submitters: The instructor reminds students who have not submitted**
+
+**UC ID and Name:** UC-STU-remind-non-submitters: Remind students who have not submitted
+**Created By:** Kadin Lee-Smith
+**Date Created:** 2026-10-01
+**Primary Actor:** instructor
+**Secondary Actors:** student
+**Trigger:** The instructor indicates to remind the students in her course section who have not submitted.
+**Description:** The instructor wants to see which students in her course section have not submitted their WAR or peer evaluation, and remind only those students, so that students who have already submitted are not reminded.
+
+**Preconditions:**
+- PRE-1. The instructor is logged into the system.
+- PRE-2. The instructor is assigned to the course section.
+
+**Postconditions:**
+- POST-1. Each selected student whose reminder the mail server accepted has been sent one reminder listing only her submissions that are eligible for a reminder.
+- POST-2. Each accepted reminder is recorded against that student, submission type, and covered week (BR-reminder-limit).
+- POST-3. The instructor is told how many students were reminded, which students could not be reminded, and which were skipped and why.
+
+**Main Success Scenario:**
+1. The instructor indicates to remind the students in her course section who have not submitted.
+2. The system identifies, for the WAR and for the peer evaluation separately, the students in the instructor's course section who have not submitted, according to the "Definition of has not submitted" defined in the Associated Information of this use case.
+3. The system displays those students according to the "List display strategy" and the "Sort criteria" defined in the Associated Information of this use case.
+4. The instructor selects one or more students, or all students, who are eligible for a reminder, and confirms that she wants to send reminders.
+5. The system re-checks each selected student against the "Definition of has not submitted" and the "Eligibility for a reminder" defined in the Associated Information of this use case.
+6. The system sends each selected student who is still eligible one reminder according to the "Reminder content" defined in the Associated Information of this use case, and records each reminder the mail server accepts.
+7. The system informs the instructor how many students were reminded.
+8. Use case ends.
+
+**Extensions:**
+- **1a. The user is not assigned to the course section:**
+  - 1a1. The system denies access to the course section's list.
+  - 1a2. Use case ends.
+- **2a. A student in the course section is not assigned to a team:**
+  - 2a1. The system excludes the student from the list and from reminders, because she cannot submit a WAR or a peer evaluation (BR-team-assignment-required).
+  - 2a2. Returns to step 2 of the normal flow for the remaining students.
+- **2b. The week a submission covers is not one of the course section's active weeks** (e.g., the first week of a break, when the WAR's week is inactive but the peer evaluation's week was active):
+  - 2b1. The system excludes that submission, for every student, from the list and from reminders (BR-active-weeks).
+  - 2b2. Returns to step 2 of the normal flow for the other submission.
+- **2c. A student added activities to her WAR and then deleted every one of them:**
+  - 2c1. The system treats her as not having submitted her WAR, because the "Definition of has not submitted" depends only on what is stored when the list is generated.
+  - 2c2. Returns to step 2 of the normal flow.
+- **3a. No student in the course section has an outstanding submission:**
+  - 3a1. The system informs the instructor that every student has submitted.
+  - 3a2. Use case ends.
+- **3b. A submission is past due:**
+  - 3b1. The system still displays the students who did not submit it and marks it past due, so that the instructor knows who missed it.
+  - 3b2. The system does not offer a reminder for that submission.
+  - 3b3. If no student is eligible for a reminder for either submission, the use case ends; otherwise, returns to step 4 of the normal flow.
+- **3c. A student has already been reminded about a submission for the week it covers:**
+  - 3c1. The system displays that the student was reminded about that submission, and when.
+  - 3c2. The system does not offer another reminder about that submission to that student (BR-reminder-limit). If she has nothing eligible for a reminder, she cannot be selected.
+  - 3c3. Returns to step 4 of the normal flow.
+- **3d. The instructor chooses a different week to review:**
+  - 3d1. The system returns to step 2 of the normal flow using the chosen week.
+- **4a. The instructor decides not to send reminders:**
+  - 4a1. The system sends no reminders and records nothing.
+  - 4a2. Use case ends.
+- **5a. A selected student has submitted since the list was displayed:**
+  - 5a1. The system removes that submission from her reminder. If nothing remains, the system skips her.
+  - 5a2. Returns to step 6 of the normal flow; the system reports skipped students, and why, in step 7.
+- **5b. A submission became past due since the list was displayed:**
+  - 5b1. The system removes that submission from every selected student's reminder. A student with nothing remaining is skipped.
+  - 5b2. Returns to step 6 of the normal flow; the system reports skipped students, and why, in step 7.
+- **5c. A selected student was reminded about a submission since the list was displayed:**
+  - 5c1. The system removes that submission from her reminder (BR-reminder-limit). If nothing remains, the system skips her.
+  - 5c2. Returns to step 6 of the normal flow; the system reports skipped students, and why, in step 7.
+- **6a. The system cannot email one or more of the selected students:**
+  - 6a1. The system continues with the remaining students rather than abandoning the batch, so that a single undeliverable address does not cost the other students their reminder.
+  - 6a2. The system records no reminder for a student whose email the mail server rejected, so she remains eligible for a reminder (BR-reminder-limit).
+  - 6a3. The system reports to the instructor which students could not be reminded.
+  - 6a4. Returns to step 7 of the normal flow.
+
+**Priority:** Medium
+**Frequency of Use:** Approximately 2 users, average of 1 to 3 usages per week during active weeks, mostly around due days.
+**Business Rules:** BR-section-scoped-access, BR-team-scoped-access, BR-role-based-access, BR-team-assignment-required, BR-active-weeks, BR-evaluation-submission-window, BR-reminder-limit
+
+**Associated Information:**
+- Definition of has not submitted: A student has not submitted her WAR if she has no activities, of any status, stored in her WAR for the week the WAR covers. A student has not submitted her peer evaluation if she has not stored an evaluation, for the week the peer evaluation covers, of every member of her team, herself included, as her team stands when the list is generated; this matches UC-EVA-submit-evaluation, where every team member must be evaluated, and is stricter than treating one stored evaluation as submitted. The WAR and the peer evaluation are checked separately.
+- Covered week: the WAR covers the current week; the peer evaluation covers the previous week (UC-EVA-submit-evaluation). When the instructor chooses a different week (extension 3d), the WAR covers the chosen week and the peer evaluation covers the week before it.
+- Past due: a WAR is past due when the current time is after the course section's configured WAR due day and due time for the week it covers. A peer evaluation is past due when its submission window has closed (BR-evaluation-submission-window). Both are checked at the moment of sending.
+- Eligibility for a reminder: a student is eligible for a reminder about a submission when she has not submitted it, it is not past due, the week it covers is an active week, and she has not already been reminded about it (BR-reminder-limit).
+- Reminder content: each reminder is addressed to one student only; no reminder is sent to a group, and no reminder reveals another student's name, address, or submission status. A student's reminder lists only the submissions she is eligible to be reminded about, each with its due day and due time. Reminders are delivered as email per CI-email-notifications.
+- Systemic failure: if the mail server cannot be reached at all, every selected student is handled as in extension 6a, so no reminder is recorded and every selected student remains eligible. A reminder record is the only durable change, and each is written only for a reminder the mail server accepted, so a failure partway through leaves a known state: students reminded before the failure are recorded and the rest are not.
+- The instructor shall be able to cancel the use case at any time prior to confirming in step 4.
+
+List display strategy:
+
+| Property name | Data type | Editability | Security/access concerns | Reference to glossary |
+| ---- | ---- | ---- | ---- | ---- |
+| student name | String | No | Visible only to an instructor assigned to the student's course section; never visible to students (CO-ferpa) |  |
+| outstanding submission | WAR, peer evaluation, or both | No | Shows which submission is missing, never the content of any submission (CO-ferpa) |  |
+| status of each outstanding submission | Eligible, Past due, or Reminded with date and time | No | Same as student name |  |
+
+Sort criteria: student last name in ascending order.
+
+**Related Use Cases:** UC-WAR-team-war-report: Generate a WAR report of a team and UC-EVA-section-evaluation-report: Generate a peer evaluation report of the entire course section, which already show who did not turn in a submission for a week; this use case adds reminding them. UC-EVA-submit-evaluation: Submit a peer evaluation for the previous week; UC-WAR-manage-activities: Manage activities in a weekly activity report; UC-SEC-setup-active-weeks: Set up active weeks for a course section; UC-STU-invite-students: Invite students to join a course section.
+**Assumptions:**
+**Open Issues:** The scheduled weekly reminder (FR-NOT-weekly-reminder) skipping students who have already submitted is a separate use case, not specified here.
+
 ### **UC-STU-invite-students: The course admin invites students to join a course section**
 
 **UC ID and Name:** UC-STU-invite-students: Invite students to join a course section
