@@ -1222,7 +1222,7 @@ No two teams can have the same name. The team name must be unique. The course ad
 
 **Preconditions:**
 - PRE-1. The instructor is logged into the system.
-- PRE-2. The instructor is assigned to the course section.
+- PRE-2. The instructor is assigned to the course section, or is a course admin who owns it (BR-section-scoped-access, BR-role-based-access).
 
 **Postconditions:**
 - POST-1. Each selected student whose reminder the mail server accepted has been sent one reminder listing only her submissions that are eligible for a reminder.
@@ -1240,7 +1240,7 @@ No two teams can have the same name. The team name must be unique. The course ad
 8. Use case ends.
 
 **Extensions:**
-- **1a. The user is not assigned to the course section:**
+- **1a. The user is neither assigned to the course section nor a course admin who owns it:**
   - 1a1. The system denies access to the course section's list.
   - 1a2. Use case ends.
 - **2a. A student in the course section is not assigned to a team:**
@@ -1300,7 +1300,7 @@ List display strategy:
 
 | Property name | Data type | Editability | Security/access concerns | Reference to glossary |
 | ---- | ---- | ---- | ---- | ---- |
-| student name | String | No | Visible only to an instructor assigned to the student's course section; never visible to students (CO-ferpa) |  |
+| student name | String | No | Visible only to an instructor assigned to, or a course admin who owns, the student's course section; never visible to students (CO-ferpa) |  |
 | outstanding submission | WAR, peer evaluation, or both | No | Shows which submission is missing, never the content of any submission (CO-ferpa) |  |
 | status of each outstanding submission | Eligible, Past due, or Reminded with date and time | No | Same as student name |  |
 
