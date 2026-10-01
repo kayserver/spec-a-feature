@@ -1235,7 +1235,7 @@ No two teams can have the same name. The team name must be unique. The course ad
 3. The system displays those students according to the "List display strategy" and the "Sort criteria" defined in the Associated Information of this use case.
 4. The instructor selects one or more students, or all students, who are eligible for a reminder, and confirms that she wants to send reminders.
 5. The system re-checks each selected student against the "Definition of has not submitted" and the "Eligibility for a reminder" defined in the Associated Information of this use case.
-6. The system sends each selected student who is still eligible one reminder according to the "Reminder content" defined in the Associated Information of this use case, and records each reminder the mail server accepts.
+6. For each selected student who is still eligible, the system first reserves her reminder against BR-reminder-limit, so that no concurrent send can remind her about the same submission, then sends one reminder according to the "Reminder content" defined in the Associated Information of this use case, and keeps the reservation as her recorded reminder once the mail server accepts it.
 7. The system informs the instructor how many students were reminded.
 8. Use case ends.
 
@@ -1279,7 +1279,7 @@ No two teams can have the same name. The team name must be unique. The course ad
   - 5c2. Returns to step 6 of the normal flow; the system reports skipped students, and why, in step 7.
 - **6a. The system cannot email one or more of the selected students:**
   - 6a1. The system continues with the remaining students rather than abandoning the batch, so that a single undeliverable address does not cost the other students their reminder.
-  - 6a2. The system records no reminder for a student whose email the mail server rejected, so she remains eligible for a reminder (BR-reminder-limit).
+  - 6a2. The system releases the reservation for a student whose email the mail server rejected, so no reminder is recorded and she remains eligible for a reminder (BR-reminder-limit).
   - 6a3. The system reports to the instructor which students could not be reminded.
   - 6a4. Returns to step 7 of the normal flow.
 
